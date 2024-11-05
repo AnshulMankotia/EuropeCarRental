@@ -78,5 +78,6 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         // ... other middlewares
         'vendor' => \App\Http\Middleware\VendorMiddleware::class,
+        'auth.vendor' => \App\Http\Middleware\RedirectIfNotVendor::class,
     ];
 }

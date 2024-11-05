@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class VendorController extends Controller
 {
@@ -24,19 +25,17 @@ class VendorController extends Controller
             'phone' => 'required|string|max:20',
         ]);
 
-        // Add debug logging
-        \Log::info('Registering vendor', ['email' => $validated['email']]);
-
-        $vendor = \App\Models\Vendor::create([
+        $vendor = Vendor::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']), // Make sure password is hashed
+            'password' => bcrypt($validated['password']),
             'company' => $validated['company'],
             'phone' => $validated['phone'],
         ]);
 
-        \Log::info('Vendor registered successfully', ['id' => $vendor->id]);
+        Auth::guard('vendor')->login($vendor);
+        session(['guard_type' => 'vendor']);
 
-        return redirect()->route('login')->with('success', 'Registration successful! Please login.');
+        return redirect('/');  // Redirect to welcome page after registration
     }
 }

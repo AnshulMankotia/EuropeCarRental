@@ -9,9 +9,11 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\VendorProductController;
-use App\Http\Controllers\VendorOrderController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VendorAuthController;
+use App\Http\Controllers\VendorOrderController;
+use App\Http\Controllers\CarsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +81,8 @@ Route::middleware(['auth', 'vendor'])->prefix('vendor')->group(function () {
     Route::post('/cars', [CarController::class, 'store'])->name('vendor.cars.store');
     Route::get('/products', [VendorProductController::class, 'index'])->name('vendor.products');
     Route::get('/orders', [VendorOrderController::class, 'index'])->name('vendor.orders');
+    Route::put('/cars/{car}', [CarController::class, 'update'])->name('vendor.cars.update');
+    Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('vendor.cars.delete');
     // ... other vendor routes
 });
 
@@ -88,22 +92,17 @@ Route::middleware('guest')->group(function () {
         ->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+    Route::post('register', [RegisteredUserController::class, 'store']);
+
     Route::get('vendor/register', [VendorController::class, 'create'])
         ->name('vendor.register');
-    Route::post('vendor/register', [VendorController::class, 'store'])
-        ->name('vendor.register.store');
+    Route::post('vendor/register', [VendorController::class, 'store']);
 });
 
-// Vendor routes
-Route::middleware('vendor')->prefix('vendor')->group(function () {
-    Route::get('/dashboard', [VendorDashboardController::class, 'index'])
-        ->name('vendor.dashboard');
-});
-
-// Logout route
-Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->name('logout')
-    ->middleware(['auth:web,vendor']);
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->name('logout');
 
 require __DIR__.'/auth.php';
 
@@ -114,3 +113,24 @@ Route::get('/debug-routes', function () {
         echo $route->uri() . ' - ' . $route->getName() . '<br>';
     }
 });
+
+// Vendor Routes
+Route::middleware(['guest'])->group(function () {
+    Route::get('vendor/register', [VendorController::class, 'create'])
+        ->name('vendor.register');
+    Route::post('vendor/register', [VendorController::class, 'store'])
+        ->name('vendor.register.store');
+});
+
+Route::middleware(['auth:vendor'])->prefix('vendor')->group(function () {
+    Route::get('/dashboard', [VendorDashboardController::class, 'index'])
+        ->name('vendor.dashboard');
+    Route::post('/logout', [VendorAuthController::class, 'logout'])
+        ->name('vendor.logout');
+    Route::post('/cars', [CarController::class, 'store'])
+        ->name('vendor.cars.store');
+    Route::put('/cars/{car}', [CarController::class, 'update'])->name('vendor.cars.update');
+    Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('vendor.cars.destroy');
+});
+
+Route::get('/cars', [CarsController::class, 'index'])->name('cars.index');

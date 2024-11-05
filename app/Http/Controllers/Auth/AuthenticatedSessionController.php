@@ -17,39 +17,33 @@ class AuthenticatedSessionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-            'type' => 'required|in:user,vendor',
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+            'type' => 'required|in:user,vendor'
         ]);
 
-        $credentials = $request->only('email', 'password');
-
-        if ($request->type === 'vendor') {
-            if (Auth::guard('vendor')->attempt($credentials)) {
-                $request->session()->regenerate();
-                
-                return redirect()->intended(route('vendor.dashboard'));
-            }
-        } else {
-            if (Auth::attempt($credentials)) {
-                $request->session()->regenerate();
-                
-                return redirect()->intended(route('dashboard'));
-            }
+        $guard = $request->type === 'vendor' ? 'vendor' : 'web';
+        
+        if (Auth::guard($guard)->attempt([
+            'email' => $request->email,
+            'password' => $request->password
+        ])) {
+            $request->session()->regenerate();
+            
+            return redirect()->intended(
+                $guard === 'vendor' ? route('vendor.dashboard') : route('dashboard')
+            );
         }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
-        ]);
+        ])->onlyInput('email');
     }
 
     public function destroy(Request $request)
     {
-        if (Auth::guard('vendor')->check()) {
-            Auth::guard('vendor')->logout();
-        } else {
-            Auth::guard('web')->logout();
-        }
+        $guard = Auth::guard('vendor')->check() ? 'vendor' : 'web';
+        Auth::guard($guard)->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

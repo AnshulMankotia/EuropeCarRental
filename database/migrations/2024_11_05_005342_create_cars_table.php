@@ -19,6 +19,14 @@ return new class extends Migration
             $table->decimal('rating', 2, 1);
             $table->decimal('price_per_day', 10, 2);
             $table->string('image_url')->nullable();
+            $table->integer('doors')->default(4);
+            $table->integer('luggage_capacity')->default(1);
+            $table->string('fuel_type')->default('Petrol');
+            $table->integer('co2_emission')->nullable();
+            $table->integer('minimum_age')->default(18);
+            $table->boolean('unlimited_mileage')->default(true);
+            $table->boolean('basic_protection')->default(true);
+            $table->decimal('excess_amount', 10, 2)->nullable();
             $table->timestamps();
 
             $table->foreign('vendor_id')

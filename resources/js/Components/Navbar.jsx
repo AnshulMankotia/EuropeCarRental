@@ -12,6 +12,9 @@ export default function Navbar() {
     });
     const { url } = usePage();
     const isWelcomePage = url === '/';
+    const user = auth.user || auth.vendor;
+
+    const isVendor = auth.vendor !== null;
 
     // Add this effect to handle authentication persistence
     useEffect(() => {
@@ -49,8 +52,11 @@ export default function Navbar() {
                         <Link href="/about-us" className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}>
                             About Us
                         </Link>
-                        <Link href="/cars" className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}>
-                            Cars
+                        <Link 
+                            href={route('cars.index')} 
+                            className="text-sm text-gray-500 hover:text-gray-900"
+                        >
+                            Available Cars
                         </Link>
                         <Link href="/features" className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}>
                             Features
@@ -93,11 +99,8 @@ export default function Navbar() {
                             </Dropdown.Content>
                         </Dropdown>
 
-                        {!auth.user ? (
-                            <Link
-                                href="/register"
-                                className="bg-white text-black py-2 px-6 rounded-full border-2 border-blue-500 hover:bg-blue-50 transition duration-300"
-                            >
+                        {!user ? (
+                            <Link href="/register" className="bg-white text-black py-2 px-6 rounded-full border-2 border-blue-500 hover:bg-blue-50 transition duration-300">
                                 Sign Up
                             </Link>
                         ) : (
@@ -105,18 +108,39 @@ export default function Navbar() {
                                 <Dropdown.Trigger>
                                     <span className="inline-flex rounded-md">
                                         <button className="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                            {auth.user.name}
+                                            {user.name}
                                         </button>
                                     </span>
                                 </Dropdown.Trigger>
 
                                 <Dropdown.Content>
-                                    <Dropdown.Link href={route('profile.edit')}>
-                                        Profile
-                                    </Dropdown.Link>
-                                    <Dropdown.Link href={route('logout')} method="post" as="button">
-                                        Log Out
-                                    </Dropdown.Link>
+                                    {isVendor ? (
+                                        <>
+                                            <Dropdown.Link href={route('vendor.dashboard')}>
+                                                Dashboard
+                                            </Dropdown.Link>
+                                            <Dropdown.Link 
+                                                href="/vendor/logout" 
+                                                method="post" 
+                                                as="button"
+                                            >
+                                                Log Out
+                                            </Dropdown.Link>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Dropdown.Link href={route('profile.edit')}>
+                                                Profile
+                                            </Dropdown.Link>
+                                            <Dropdown.Link 
+                                                href={route('logout')} 
+                                                method="post" 
+                                                as="button"
+                                            >
+                                                Log Out
+                                            </Dropdown.Link>
+                                        </>
+                                    )}
                                 </Dropdown.Content>
                             </Dropdown>
                         )}

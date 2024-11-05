@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Illuminate\Support\Facades\Auth;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -31,12 +32,15 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'role' => $request->user()->role,
-                ] : null,
+                'user' => $request->user(),
+                'vendor' => Auth::guard('vendor')->user(),
+            ],
+            'flash' => [
+                'message' => fn () => $request->session()->get('message')
+            ],
+            'ziggy' => [
+                'location' => $request->url(),
+                'routes' => fn () => app('router')->getRoutes()->getRoutesByName(),
             ],
         ]);
     }
