@@ -1,0 +1,116 @@
+<?php
+
+use App\Http\Controllers\ProfileController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\CarController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\VendorDashboardController;
+use App\Http\Controllers\VendorProductController;
+use App\Http\Controllers\VendorOrderController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    return Inertia::render('Welcome');
+})->name('welcome');
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/about-us', function () {
+    return Inertia::render('About');
+});
+
+Route::get('/register', [RegisteredUserController::class, 'create'])
+    ->name('register')
+    ->middleware('guest');
+
+Route::get('/vendor/register', [VendorController::class, 'create'])
+    ->name('vendor.register')
+    ->middleware('guest');
+
+Route::post('/vendor/register', [VendorController::class, 'store'])
+    ->name('vendor.register.store')
+    ->middleware('guest');
+
+Route::middleware(['auth:vendor'])->group(function () {
+    Route::get('/vendor/dashboard', [VendorController::class, 'dashboard'])->name('vendor.dashboard');
+    Route::post('/vendor/cars', [CarController::class, 'store'])->name('vendor.cars.store');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+    
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+    // ... other user routes
+});
+
+Route::middleware(['auth', 'vendor'])->prefix('vendor')->group(function () {
+    Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('vendor.dashboard');
+    Route::post('/cars', [CarController::class, 'store'])->name('vendor.cars.store');
+    Route::get('/products', [VendorProductController::class, 'index'])->name('vendor.products');
+    Route::get('/orders', [VendorOrderController::class, 'index'])->name('vendor.orders');
+    // ... other vendor routes
+});
+
+// Public routes
+Route::middleware('guest')->group(function () {
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('vendor/register', [VendorController::class, 'create'])
+        ->name('vendor.register');
+    Route::post('vendor/register', [VendorController::class, 'store'])
+        ->name('vendor.register.store');
+});
+
+// Vendor routes
+Route::middleware('vendor')->prefix('vendor')->group(function () {
+    Route::get('/dashboard', [VendorDashboardController::class, 'index'])
+        ->name('vendor.dashboard');
+});
+
+// Logout route
+Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->name('logout')
+    ->middleware(['auth:web,vendor']);
+
+require __DIR__.'/auth.php';
+
+// Debug route list
+Route::get('/debug-routes', function () {
+    $routes = Route::getRoutes();
+    foreach ($routes as $route) {
+        echo $route->uri() . ' - ' . $route->getName() . '<br>';
+    }
+});
