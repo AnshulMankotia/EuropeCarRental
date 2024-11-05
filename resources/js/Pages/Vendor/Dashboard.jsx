@@ -5,10 +5,12 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { AiFillStar } from 'react-icons/ai';
 
 export default function Dashboard({ auth, cars, stats }) {
     const [showForm, setShowForm] = useState(false);
     const [editingCar, setEditingCar] = useState(null);
+    const [collapsedCars, setCollapsedCars] = useState([]);
     
     const { data, setData, post, put, processing, errors, reset } = useForm({
         brand: '',
@@ -93,6 +95,14 @@ export default function Dashboard({ auth, cars, stats }) {
         setData('image', e.target.files[0]);
     };
 
+    const toggleDetails = (carId) => {
+        setCollapsedCars(prev => 
+            prev.includes(carId) 
+                ? prev.filter(id => id !== carId) 
+                : [...prev, carId]
+        );
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.vendor}
@@ -100,29 +110,29 @@ export default function Dashboard({ auth, cars, stats }) {
         >
             <Head title="Vendor Dashboard" />
 
-            <div className="py-12 bg-login-background-image bg-cover bg-center flex items-center m-auto">
-                <div className="container max-w-screen-xl mx-auto">
+            <div className="py-12 bg-white">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Stats Section */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <div className="bg-[#e5e5e5] overflow-hidden shadow-sm sm:rounded-lg p-6">
                             <h3 className="text-lg font-semibold text-gray-900">Total Cars</h3>
                             <p className="text-3xl font-bold text-indigo-600">{stats.totalCars}</p>
                         </div>
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <div className="bg-[#e5e5e5] overflow-hidden shadow-sm sm:rounded-lg p-6">
                             <h3 className="text-lg font-semibold text-gray-900">Active Rentals</h3>
                             <p className="text-3xl font-bold text-green-600">{stats.activeRentals}</p>
                         </div>
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                        <div className="bg-[#e5e5e5] overflow-hidden shadow-sm sm:rounded-lg p-6">
                             <h3 className="text-lg font-semibold text-gray-900">Total Earnings</h3>
                             <p className="text-3xl font-bold text-blue-600">₹{stats.totalEarnings}</p>
                         </div>
                     </div>
 
                     {/* Cars Section */}
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-semibold text-gray-900">My Cars</h3>
+                                <h3 className="text-3xl font-bold">My Cars</h3>
                                 <PrimaryButton onClick={() => setShowForm(!showForm)}>
                                     {showForm ? 'Cancel' : 'Add New Car'}
                                 </PrimaryButton>
@@ -342,33 +352,134 @@ export default function Dashboard({ auth, cars, stats }) {
                             )}
 
                             {/* Cars List */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8">
                                 {cars.map((car) => (
-                                    <div key={car.id} className="bg-white rounded-lg shadow overflow-hidden">
-                                        <img 
-                                            src={`/storage/${car.image_url}`} 
-                                            alt={`${car.brand} ${car.model}`}
-                                            className="w-full h-48 object-cover"
-                                        />
-                                        <div className="p-4">
-                                            <h4 className="font-semibold text-lg">{car.brand} {car.model}</h4>
-                                            <p className="text-gray-600">Transmission: {car.transmission}</p>
-                                            <p className="text-gray-600">Seats: {car.seats}</p>
-                                            <p className="text-green-600 font-semibold mt-2">₹{car.price_per_day}/day</p>
-                                            
-                                            <div className="mt-4 flex justify-end space-x-2">
-                                                <button
-                                                    onClick={() => handleEdit(car)}
-                                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(car.id)}
-                                                    className="px-4 py-2 bg-red text-white rounded hover:bg-blue-600"
-                                                >
-                                                    Delete
-                                                </button>
+                                    <div key={car.id} className="bg-white rounded-lg shadow-lg overflow-hidden flex justify-between">
+                                        {/* Car Image */}
+                                        <div className="relative bg-lightGray pt-6 pb-6 pr-4 pl-4 w-[45%]">
+                                            <img 
+                                                src={`/storage/${car.image_url}`}
+                                                alt={`${car.brand} ${car.model}`}
+                                                className="w-full object-cover"
+                                            />
+                                        </div>
+
+                                        {/* Car Details */}
+                                        <div className="p-4 w-[50%]">
+                                            <h3 className="text-lg font-semibold text-gray-900">
+                                                {car.brand} {car.model}
+                                            </h3>
+
+                                            {/* Quick Info */}
+                                            <div className="flex items-center justify-between text-gray-500 text-sm my-4">
+                                                <div className="flex items-center space-x-1 bg-lightGray px-2 py-1 rounded">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M5.35 5.13965C4.45 4.49965 4.23 3.25965 4.86 2.34965C5.5 1.44965 6.74 1.22965 7.65 1.85965C8.55 2.49965 8.77 3.73965 8.14 4.64965C7.5 5.54965 6.26 5.76965 5.35 5.13965ZM16 18.4997H8.93C7.45 18.4997 6.19 17.4197 5.97 15.9597L4 6.49965H2L4 16.2597C4.17955 17.4407 4.77684 18.5181 5.68334 19.2962C6.58984 20.0742 7.74539 20.5013 8.94 20.4997H16M16.23 14.4997H11.35L10.32 10.3997C11.9 11.2897 13.6 11.9397 15.47 11.6197V9.49965C13.84 9.79965 12.03 9.21965 10.78 8.23965L9.14 6.96965C8.91 6.78965 8.65 6.66965 8.38 6.58965C8.05887 6.49456 7.72026 6.47404 7.39 6.52965H7.37C6.78138 6.63469 6.25797 6.96771 5.91346 7.4564C5.56894 7.94509 5.43115 8.54996 5.53 9.13965L6.88 15.0597C7.00866 15.7472 7.3743 16.3679 7.9133 16.8137C8.45229 17.2595 9.13053 17.5022 9.83 17.4997H16.68L20.5 20.4997L22 18.9997" fill="#202020"/>
+                                                    </svg>
+                                                    <span>{car.seats} Seats</span>
+                                                </div>
+                                                <div className="flex items-center space-x-1 bg-lightGray px-2 py-1 rounded">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        {/* ... transmission icon ... */}
+                                                    </svg>
+                                                    <span>{car.transmission}</span>
+                                                </div>
+                                                <div className="flex items-center space-x-1 bg-lightGray px-2 py-1 rounded">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M10.7888 6.74796H12.9808V4.55596H10.7888V6.74796Z" fill="#202020"/>
+                                                    </svg>
+                                                    <span>{car.luggage_capacity}</span>
+                                                </div>
+                                                <div className="flex items-center space-x-1 bg-lightGray px-2 py-1 rounded">
+                                                    <AiFillStar className="text-yellow-500" />
+                                                    <span>{car.rating}/5</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Show More/Less Button */}
+                                            <button 
+                                                onClick={() => toggleDetails(car.id)}
+                                                className="text-green hover:text-black text-sm font-medium mb-4"
+                                            >
+                                                {collapsedCars.includes(car.id) ? 'Show More' : 'Show Less'}
+                                            </button>
+
+                                            {/* Expandable Details */}
+                                            {!collapsedCars.includes(car.id) && (
+                                                <div className="space-y-4 mt-4 border-t pt-4">
+                                                    <h4 className="font-semibold text-gray-900">Full Vehicle Details</h4>
+                                                    
+                                                    <div className="grid grid-cols-2 gap-4 text-[1rem]">
+                                                        <div>
+                                                            <p className="text-gray-600">Doors</p>
+                                                            <p className="font-medium">{car.doors}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-600">Luggage Capacity</p>
+                                                            <p className="font-medium">{car.luggage_capacity}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-600">CO2 Emission</p>
+                                                            <p className="font-medium">{car.co2_emission}g/km</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-600">Minimum Age</p>
+                                                            <p className="font-medium">{car.minimum_age} years</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <h4 className="font-semibold text-gray-900 text-[1.2rem]">Protection</h4>
+                                                        {car.basic_protection && (
+                                                            <div className="text-[1rem]">
+                                                                <p className="text-green flex items-center gap-2">
+                                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        {/* ... checkmark icon ... */}
+                                                                    </svg>
+                                                                    Basic Protection Included
+                                                                </p>
+                                                                {car.excess_amount && (
+                                                                    <p className="text-gray mt-1">
+                                                                        Excess: ₹{car.excess_amount}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {car.unlimited_mileage && (
+                                                        <p className="text-green text-[1rem] flex items-center gap-2">
+                                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                {/* ... checkmark icon ... */}
+                                                            </svg>
+                                                            Unlimited Mileage
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Pricing and Actions */}
+                                            <div className="border-t pt-4 mt-4 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-gray-500">Start from</p>
+                                                    <p className="text-2xl font-semibold text-gray-900">
+                                                        ₹{car.price_per_day} <span className="text-sm">/ day</span>
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleEdit(car)}
+                                                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(car.id)}
+                                                        className="bg-red text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

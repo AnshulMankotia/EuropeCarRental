@@ -6,11 +6,15 @@ use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 
 class VendorController extends Controller
 {
     public function create()
+    {
+        return Inertia::render('Vendor/Register');
+    }
+
+    public function register()
     {
         return Inertia::render('Vendor/Register');
     }
@@ -25,6 +29,7 @@ class VendorController extends Controller
             'phone' => 'required|string|max:20',
         ]);
 
+        // Create vendor
         $vendor = Vendor::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -33,9 +38,9 @@ class VendorController extends Controller
             'phone' => $validated['phone'],
         ]);
 
-        Auth::guard('vendor')->login($vendor);
-        session(['guard_type' => 'vendor']);
+        // Log in the vendor immediately after registration
+        auth('vendor')->login($vendor);
 
-        return redirect('/');  // Redirect to welcome page after registration
+        return redirect()->route('vendor.dashboard')->with('success', 'Registration successful! Welcome to your dashboard.');
     }
 }

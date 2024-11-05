@@ -9,8 +9,6 @@ class Vendor extends Authenticatable
 {
     use Notifiable;
 
-    protected $guard = 'vendor';
-
     protected $fillable = [
         'name',
         'email',

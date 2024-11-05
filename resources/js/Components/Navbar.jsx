@@ -45,7 +45,8 @@ export default function Navbar() {
                     </div>
 
                     {/* Navigation Links */}
-                    <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-6 w-[75%] justify-between">
+                        <div className='flex items-center space-x-12 justify-between'>
                         <Link href="/" className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}>
                             Home
                         </Link>
@@ -54,9 +55,9 @@ export default function Navbar() {
                         </Link>
                         <Link 
                             href={route('cars.index')} 
-                            className="text-sm text-gray-500 hover:text-gray-900"
+                            className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}
                         >
-                            Available Cars
+                            Cars
                         </Link>
                         <Link href="/features" className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}>
                             Features
@@ -64,7 +65,7 @@ export default function Navbar() {
                         <Link href="/help" className={`${isWelcomePage ? 'text-black' : 'text-white'} hover:text-gray-500`}>
                             Help
                         </Link>
-
+                        </div>
                         {/* Search Bar */}
                         <div className="relative">
                             <input
@@ -79,6 +80,7 @@ export default function Navbar() {
                             </button>
                         </div>
 
+                        <div className='flex items-center space-x-4 justify-between'>
                         {/* Language Selector */}
                         <Dropdown>
                             <Dropdown.Trigger>
@@ -144,6 +146,7 @@ export default function Navbar() {
                                 </Dropdown.Content>
                             </Dropdown>
                         )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VendorAuthController;
 use App\Http\Controllers\VendorOrderController;
 use App\Http\Controllers\CarsController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,13 +55,11 @@ Route::get('/register', [RegisteredUserController::class, 'create'])
     ->name('register')
     ->middleware('guest');
 
-Route::get('/vendor/register', [VendorController::class, 'create'])
-    ->name('vendor.register')
-    ->middleware('guest');
+Route::get('/vendor/register', function () {
+    return Inertia::render('Auth/VendorRegister');
+})->name('vendor.register');
 
-Route::post('/vendor/register', [VendorController::class, 'store'])
-    ->name('vendor.register.store')
-    ->middleware('guest');
+Route::post('/vendor/register', [VendorController::class, 'register'])->name('vendor.register.store');
 
 Route::middleware(['auth:vendor'])->group(function () {
     Route::get('/vendor/dashboard', [VendorController::class, 'dashboard'])->name('vendor.dashboard');
@@ -96,9 +95,12 @@ Route::middleware('guest')->group(function () {
         ->name('register');
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('vendor/register', [VendorController::class, 'create'])
-        ->name('vendor.register');
-    Route::post('vendor/register', [VendorController::class, 'store']);
+    Route::get('vendor/register', function () {
+        return Inertia::render('Vendor/Register');
+    })->name('vendor.register');
+    
+    Route::post('/vendor/register', [VendorController::class, 'store'])
+        ->name('vendor.register.store');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -116,9 +118,11 @@ Route::get('/debug-routes', function () {
 
 // Vendor Routes
 Route::middleware(['guest'])->group(function () {
-    Route::get('vendor/register', [VendorController::class, 'create'])
-        ->name('vendor.register');
-    Route::post('vendor/register', [VendorController::class, 'store'])
+    Route::get('/vendor/register', function () {
+        return Inertia::render('Vendor/Register');
+    })->name('vendor.register');
+    
+    Route::post('/vendor/register', [VendorController::class, 'store'])
         ->name('vendor.register.store');
 });
 
@@ -133,4 +137,7 @@ Route::middleware(['auth:vendor'])->prefix('vendor')->group(function () {
     Route::delete('/cars/{car}', [CarController::class, 'destroy'])->name('vendor.cars.destroy');
 });
 
-Route::get('/cars', [CarsController::class, 'index'])->name('cars.index');
+Route::get('/cars', [CarController::class, 'index'])->name('cars.index');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/vendor/register', [VendorController::class, 'register'])->name('vendor.register');
+// ... other routes ...
